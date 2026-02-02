@@ -1,32 +1,36 @@
 export interface LBOAssumptions {
-    
+
     revenue: number;
     revenueGrowth: number;
     ebitdaMargin: number;
     taxRate: number;
 
-    
+
     entryMultiple: number;
     exitMultiple: number;
-    transactionFees: number; 
-    minCash: number; 
+    transactionFees: number;
+    minCash: number;
 
-    
+
     seniorDebtMultiple: number;
     juniorDebtMultiple: number;
 
-    
-    seniorInterest: number; 
-    juniorInterest: number; 
-    seniorAmort: number; 
 
-    
-    mipPercent: number; 
+    seniorInterest: number;
+    juniorInterest: number;
+    seniorAmort: number;
+
+
+    mipPercent: number;
+
+
+    capexPercent: number;
+    refinanceAmount: number;
 }
 
 export interface YearData {
     year: number;
-    
+
     revenue: number;
     ebitda: number;
     depreciation: number;
@@ -36,7 +40,7 @@ export interface YearData {
     taxes: number;
     netIncome: number;
 
-    
+
     plusDepreciation: number;
     lessCapex: number;
     lessNWC: number;
@@ -45,20 +49,20 @@ export interface YearData {
     optionalPrepay: number;
     totalDebtPaydown: number;
 
-    
+
     cash: number;
     revolver: number;
     seniorDebt: number;
     juniorDebt: number;
     totalDebt: number;
 
-    
+
     exitEV?: number;
-    exitEquityValue?: number; 
+    exitEquityValue?: number;
     managementProceeds?: number;
-    sponsorProceeds?: number; 
-    moic?: number; 
-    irr?: number; 
+    sponsorProceeds?: number;
+    moic?: number;
+    irr?: number;
 }
 
 export interface SourcesAndUses {
@@ -85,9 +89,9 @@ export interface LBOOutputs {
         exitMultiple: number;
         entryEV: number;
         exitEV: number;
-        exitEquityValue: number; 
+        exitEquityValue: number;
         managementProceeds: number;
-        sponsorProceeds: number; 
+        sponsorProceeds: number;
     };
     returns: {
         irr: number;
@@ -111,13 +115,15 @@ export function calculateLBOProfessional(assumptions: LBOAssumptions): LBOOutput
         juniorInterest,
         seniorAmort,
         mipPercent,
+        capexPercent,
+        refinanceAmount,
     } = assumptions;
 
-    
+
     const initialEbitda = revenue * (ebitdaMargin / 100);
     const purchasePrice = initialEbitda * entryMultiple;
     const fees = purchasePrice * (transactionFees / 100);
-    const totalUses = purchasePrice + fees + minCash;
+    const totalUses = purchasePrice + fees + minCash + refinanceAmount;
 
     const initialSeniorDebt = initialEbitda * seniorDebtMultiple;
     const initialJuniorDebt = initialEbitda * juniorDebtMultiple;
@@ -126,18 +132,18 @@ export function calculateLBOProfessional(assumptions: LBOAssumptions): LBOOutput
     const sponsorEquity = Math.max(0, totalUses - totalDebt);
 
     const sourcesAndUses: SourcesAndUses = {
-        uses: { purchasePrice, fees, refinance: 0, minCash, totalUses },
+        uses: { purchasePrice, fees, refinance: refinanceAmount, minCash, totalUses },
         sources: { seniorDebt: initialSeniorDebt, juniorDebt: initialJuniorDebt, sponsorEquity, totalSources: totalUses }
     };
 
-    
+
     let projections: YearData[] = [];
     const ITERATIONS = 10;
 
     for (let iter = 0; iter < ITERATIONS; iter++) {
         projections = [];
 
-        
+
         projections.push({
             year: 0,
             revenue: revenue,
@@ -160,7 +166,7 @@ export function calculateLBOProfessional(assumptions: LBOAssumptions): LBOOutput
             seniorDebt: initialSeniorDebt,
             juniorDebt: initialJuniorDebt,
             totalDebt: initialSeniorDebt + initialJuniorDebt,
-            
+
             exitEV: purchasePrice,
             exitEquityValue: sponsorEquity,
             managementProceeds: 0,
@@ -173,19 +179,19 @@ export function calculateLBOProfessional(assumptions: LBOAssumptions): LBOOutput
         let currentJuniorDebt = initialJuniorDebt;
         let currentRevolver = 0;
 
-        
+
         for (let year = 1; year <= 5; year++) {
             const prev = projections[year - 1];
 
-            
+
             const projRevenue = prev.revenue * (1 + revenueGrowth / 100);
             const ebitda = projRevenue * (ebitdaMargin / 100);
             const depreciation = projRevenue * 0.02;
-            const capex = projRevenue * 0.02;
+            const capex = projRevenue * (capexPercent / 100);
             const nwcChange = projRevenue * 0.01;
             const ebit = ebitda - depreciation;
 
-            
+
             const boSenior = prev.seniorDebt;
             const boJunior = prev.juniorDebt;
             const boRevolver = prev.revolver;
@@ -198,16 +204,16 @@ export function calculateLBOProfessional(assumptions: LBOAssumptions): LBOOutput
 
             const interestExpense = snrInt + jnrInt + revInt;
 
-            
+
             const preTaxIncome = ebit - interestExpense;
             const taxes = Math.max(0, preTaxIncome * (taxRate / 100));
             const netIncome = preTaxIncome - taxes;
 
-            
+
             const cfo = netIncome + depreciation - nwcChange;
             const fcf = cfo - capex;
 
-            
+
             const mandAmortAmount = initialSeniorDebt * (seniorAmort / 100);
             let actMandAmort = Math.min(mandAmortAmount, boSenior);
 
@@ -228,15 +234,15 @@ export function calculateLBOProfessional(assumptions: LBOAssumptions): LBOOutput
                 cashForSweep -= optPrepaySenior;
             }
 
-            
+
             currentRevolver = boRevolver + drawRevolver - payRevolver;
             currentSeniorDebt = boSenior - actMandAmort - optPrepaySenior;
             currentJuniorDebt = boJunior;
 
             const endTotalDebt = currentSeniorDebt + currentJuniorDebt + currentRevolver;
 
-            
-            const impliedExitEV = ebitda * exitMultiple; 
+
+            const impliedExitEV = ebitda * exitMultiple;
             const impliedExitEquity = Math.max(0, impliedExitEV - (endTotalDebt - minCash));
 
             const mgmtProceeds = impliedExitEquity * (mipPercent / 100);
@@ -275,7 +281,7 @@ export function calculateLBOProfessional(assumptions: LBOAssumptions): LBOOutput
                 juniorDebt: currentJuniorDebt,
                 totalDebt: endTotalDebt,
 
-                
+
                 exitEV: impliedExitEV,
                 exitEquityValue: impliedExitEquity,
                 managementProceeds: mgmtProceeds,
@@ -286,7 +292,7 @@ export function calculateLBOProfessional(assumptions: LBOAssumptions): LBOOutput
         }
     }
 
-    
+
     const finalYear = projections[5];
 
     return {

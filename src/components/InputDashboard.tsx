@@ -16,30 +16,34 @@ export default function InputDashboard() {
 
     const [activeTab, setActiveTab] = useState<"overview" | "financials">("overview");
 
-    
+
     const [formData, setFormData] = useState({
-        
+
         revenue: "100",
         revenueGrowth: "5.0",
         ebitdaMargin: "25.0",
         taxRate: "21.0",
-        
+
         entryMultiple: "10.0",
         exitMultiple: "10.0",
-        transactionFees: "2.0", 
+        transactionFees: "2.0",
         minCash: "5.0",
-        mipPercent: "10.0", 
-        
+        mipPercent: "10.0",
+
         seniorDebtMultiple: "3.5",
         juniorDebtMultiple: "1.5",
-        seniorInterest: "6.5", 
-        juniorInterest: "10.0", 
-        seniorAmort: "1.0", 
+        seniorInterest: "6.5",
+        juniorInterest: "10.0",
+        seniorAmort: "1.0",
+
+
+        capexPercent: "2.0",
+        refinanceAmount: "0.0",
     });
 
     const [isLoaded, setIsLoaded] = useState(false);
 
-    
+
     useEffect(() => {
         if (tickerParam && !isLoaded) {
             handleTickerSearch(tickerParam);
@@ -80,9 +84,11 @@ export default function InputDashboard() {
         juniorInterest: parseFloat(formData.juniorInterest) || 0,
         seniorAmort: parseFloat(formData.seniorAmort) || 0,
         mipPercent: parseFloat(formData.mipPercent) || 0,
+        capexPercent: parseFloat(formData.capexPercent) || 0,
+        refinanceAmount: parseFloat(formData.refinanceAmount) || 0,
     }), [formData]);
 
-    
+
     const outputs = useMemo(() => {
         return calculateLBOProfessional(assumptions);
     }, [assumptions]);
@@ -94,7 +100,7 @@ export default function InputDashboard() {
     return (
         <div className="flex h-screen bg-[#0a0a0a] text-white overflow-hidden font-sans selection:bg-neutral-800/50">
 
-            {}
+            { }
             <aside className="w-[320px] flex-shrink-0 border-r border-neutral-800 bg-[#0f1110] overflow-y-auto custom-scrollbar">
                 <div className="p-6 space-y-8">
                     <div className="flex items-center">
@@ -104,18 +110,19 @@ export default function InputDashboard() {
                     </div>
 
                     <div className="space-y-8">
-                        {}
+                        { }
                         <div className="space-y-4">
                             <h3 className="text-sm font-semibold text-white border-b border-neutral-800 pb-2">Operating Case</h3>
                             <div className="space-y-3">
                                 <Input id="revenue" label="LTM Revenue ($M)" value={formData.revenue} onChange={handleChange} />
                                 <Input id="revenueGrowth" label="Revenue Growth (%)" value={formData.revenueGrowth} onChange={handleChange} />
                                 <Input id="ebitdaMargin" label="EBITDA Margin (%)" value={formData.ebitdaMargin} onChange={handleChange} />
+                                <Input id="capexPercent" label="Capex (% of Rev)" value={formData.capexPercent} onChange={handleChange} />
                                 <Input id="minCash" label="Min Cash ($M)" value={formData.minCash} onChange={handleChange} />
                             </div>
                         </div>
 
-                        {}
+                        { }
                         <div className="space-y-4">
                             <h3 className="text-sm font-semibold text-white border-b border-neutral-800 pb-2">Transaction Details</h3>
                             <div className="space-y-3">
@@ -125,11 +132,12 @@ export default function InputDashboard() {
                                     <Input id="transactionFees" label="Tx Fees (%)" value={formData.transactionFees} onChange={handleChange} />
                                     <Input id="taxRate" label="Tax Rate (%)" value={formData.taxRate} onChange={handleChange} />
                                 </div>
+                                <Input id="refinanceAmount" label="Refinance Debt ($M)" value={formData.refinanceAmount} onChange={handleChange} />
                                 <Input id="mipPercent" label="Mgmt Incentive (%)" value={formData.mipPercent} onChange={handleChange} />
                             </div>
                         </div>
 
-                        {}
+                        { }
                         <div className="space-y-4">
                             <h3 className="text-sm font-semibold text-white border-b border-neutral-800 pb-2">Debt Structure</h3>
 
@@ -156,10 +164,10 @@ export default function InputDashboard() {
                 </div>
             </aside>
 
-            {}
+            { }
             <main className="flex-1 flex flex-col overflow-hidden bg-[#0a0a0a] relative">
 
-                {}
+                { }
                 <div className="flex-shrink-0 h-16 border-b border-neutral-800 flex items-center px-8 justify-between bg-[#0a0a0a] z-10">
                     <div>
                         <h1 className="text-lg font-semibold text-white">
@@ -180,8 +188,8 @@ export default function InputDashboard() {
                             <button
                                 onClick={() => setActiveTab("overview")}
                                 className={`px-4 py-1.5 rounded text-xs font-medium transition-all ${activeTab === "overview"
-                                        ? "bg-neutral-800 text-white shadow-sm"
-                                        : "text-neutral-500 hover:text-neutral-300"
+                                    ? "bg-neutral-800 text-white shadow-sm"
+                                    : "text-neutral-500 hover:text-neutral-300"
                                     }`}
                             >
                                 Overview
@@ -189,8 +197,8 @@ export default function InputDashboard() {
                             <button
                                 onClick={() => setActiveTab("financials")}
                                 className={`px-4 py-1.5 rounded text-xs font-medium transition-all ${activeTab === "financials"
-                                        ? "bg-neutral-800 text-white shadow-sm"
-                                        : "text-neutral-500 hover:text-neutral-300"
+                                    ? "bg-neutral-800 text-white shadow-sm"
+                                    : "text-neutral-500 hover:text-neutral-300"
                                     }`}
                             >
                                 Financials
@@ -199,7 +207,7 @@ export default function InputDashboard() {
                     </div>
                 </div>
 
-                {}
+                { }
                 <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-[#0a0a0a]">
                     <div className="max-w-[1400px] mx-auto pb-12">
                         {activeTab === "overview" ? (

@@ -98,26 +98,106 @@ export async function generateExcelModel(
     wsSummary.getCell("C7").numFmt = numFmtMultiple;
     wsSummary.getCell("C7").font = fontBold;
 
-    wsSummary.getCell("B10").value = "Sensitivity Analysis (Net IRR)";
-    wsSummary.getCell("B10").font = { name: "Arial", size: 10, bold: true };
-    wsSummary.getCell("B10").border = borderBottom;
+    const startRowSU = 4;
+    const colSource = "F";
+    const colAmount = "G";
 
-    wsSummary.getCell("C12").value = "Exit Multiple ->";
-    wsSummary.getCell("B13").value = "Growth %";
+    wsSummary.getCell(`${colSource}${startRowSU}`).value = "Sources & Uses";
+    wsSummary.getCell(`${colSource}${startRowSU}`).font = { name: "Arial", size: 10, bold: true };
+    wsSummary.getCell(`${colSource}${startRowSU}`).border = borderBottom;
+
+    wsSummary.getCell(`${colSource}${startRowSU + 2}`).value = "Uses of Funds";
+    wsSummary.getCell(`${colSource}${startRowSU + 2}`).font = fontBold;
+
+    wsSummary.getCell(`${colSource}${startRowSU + 3}`).value = "Purchase Price";
+    wsSummary.getCell(`${colAmount}${startRowSU + 3}`).value = outputs.sourcesAndUses.uses.purchasePrice;
+
+    wsSummary.getCell(`${colSource}${startRowSU + 4}`).value = "Refinance Data";
+    wsSummary.getCell(`${colAmount}${startRowSU + 4}`).value = outputs.sourcesAndUses.uses.refinance;
+
+    wsSummary.getCell(`${colSource}${startRowSU + 5}`).value = "Transaction Fees";
+    wsSummary.getCell(`${colAmount}${startRowSU + 5}`).value = outputs.sourcesAndUses.uses.fees;
+
+    wsSummary.getCell(`${colSource}${startRowSU + 6}`).value = "Min Cash on B/S";
+    wsSummary.getCell(`${colAmount}${startRowSU + 6}`).value = outputs.sourcesAndUses.uses.minCash;
+
+    wsSummary.getCell(`${colSource}${startRowSU + 7}`).value = "Total Uses";
+    wsSummary.getCell(`${colSource}${startRowSU + 7}`).font = fontBold;
+    wsSummary.getCell(`${colAmount}${startRowSU + 7}`).value = outputs.sourcesAndUses.uses.totalUses;
+    wsSummary.getCell(`${colAmount}${startRowSU + 7}`).font = fontBold;
+    wsSummary.getCell(`${colAmount}${startRowSU + 7}`).border = { top: { style: 'thin' } };
+
+    const startRowSources = startRowSU + 8;
+    wsSummary.getCell(`${colSource}${startRowSources}`).value = "Sources of Funds";
+    wsSummary.getCell(`${colSource}${startRowSources}`).font = fontBold;
+
+    wsSummary.getCell(`${colSource}${startRowSources + 1}`).value = "Senior Debt";
+    wsSummary.getCell(`${colAmount}${startRowSources + 1}`).value = outputs.sourcesAndUses.sources.seniorDebt;
+
+    wsSummary.getCell(`${colSource}${startRowSources + 2}`).value = "Junior Debt";
+    wsSummary.getCell(`${colAmount}${startRowSources + 2}`).value = outputs.sourcesAndUses.sources.juniorDebt;
+
+    wsSummary.getCell(`${colSource}${startRowSources + 3}`).value = "Sponsor Equity";
+    wsSummary.getCell(`${colAmount}${startRowSources + 3}`).value = outputs.sourcesAndUses.sources.sponsorEquity;
+    wsSummary.getCell(`${colAmount}${startRowSources + 3}`).font = { ...fontStd, color: { argb: "FF0000FF" } };
+
+    wsSummary.getCell(`${colSource}${startRowSources + 4}`).value = "Total Sources";
+    wsSummary.getCell(`${colSource}${startRowSources + 4}`).font = fontBold;
+    wsSummary.getCell(`${colAmount}${startRowSources + 4}`).value = outputs.sourcesAndUses.sources.totalSources;
+    wsSummary.getCell(`${colAmount}${startRowSources + 4}`).font = fontBold;
+    wsSummary.getCell(`${colAmount}${startRowSources + 4}`).border = { top: { style: 'thin' } };
+
+    for (let r = startRowSU + 3; r <= startRowSources + 4; r++) {
+        const cell = wsSummary.getCell(`${colAmount}${r}`);
+        if (cell.value) cell.numFmt = numFmtCurrency;
+    }
+
+    const startRowAssump = 10;
+    wsSummary.getCell(`B${startRowAssump}`).value = "Key Assumptions";
+    wsSummary.getCell(`B${startRowAssump}`).font = { name: "Arial", size: 10, bold: true };
+    wsSummary.getCell(`B${startRowAssump}`).border = borderBottom;
+
+    wsSummary.getCell(`B${startRowAssump + 2}`).value = "Entry Multiple";
+    wsSummary.getCell(`C${startRowAssump + 2}`).value = assumptions.entryMultiple;
+    wsSummary.getCell(`C${startRowAssump + 2}`).numFmt = numFmtMultiple;
+
+    wsSummary.getCell(`B${startRowAssump + 3}`).value = "Exit Multiple";
+    wsSummary.getCell(`C${startRowAssump + 3}`).value = assumptions.exitMultiple;
+    wsSummary.getCell(`C${startRowAssump + 3}`).numFmt = numFmtMultiple;
+
+    wsSummary.getCell(`B${startRowAssump + 4}`).value = "Senior Debt / EBITDA";
+    wsSummary.getCell(`C${startRowAssump + 4}`).value = assumptions.seniorDebtMultiple;
+    wsSummary.getCell(`C${startRowAssump + 4}`).numFmt = numFmtMultiple;
+
+    wsSummary.getCell(`B${startRowAssump + 5}`).value = "Junior Debt / EBITDA";
+    wsSummary.getCell(`C${startRowAssump + 5}`).value = assumptions.juniorDebtMultiple;
+    wsSummary.getCell(`C${startRowAssump + 5}`).numFmt = numFmtMultiple;
+
+    wsSummary.getCell(`B${startRowAssump + 6}`).value = "Capex % of Revenue";
+    wsSummary.getCell(`C${startRowAssump + 6}`).value = assumptions.capexPercent / 100;
+    wsSummary.getCell(`C${startRowAssump + 6}`).numFmt = numFmtPercent;
+
+    const startRowSens = 18;
+    wsSummary.getCell(`B${startRowSens}`).value = "Sensitivity Analysis (Net IRR)";
+    wsSummary.getCell(`B${startRowSens}`).font = { name: "Arial", size: 10, bold: true };
+    wsSummary.getCell(`B${startRowSens}`).border = borderBottom;
+
+    wsSummary.getCell(`C${startRowSens + 2}`).value = "Exit Multiple ->";
+    wsSummary.getCell(`B${startRowSens + 3}`).value = "Growth %";
 
     const baseExit = assumptions.exitMultiple;
     const baseGrowth = assumptions.revenueGrowth;
     const steps = [-1, 0, 1];
 
     steps.forEach((step, i) => {
-        wsSummary.getCell(12, 3 + i).value = `${(baseExit + step).toFixed(1)}x`;
-        wsSummary.getCell(12, 3 + i).font = fontBold;
-        wsSummary.getCell(12, 3 + i).alignment = alignCenter;
+        wsSummary.getCell(startRowSens + 2, 3 + i).value = `${(baseExit + step).toFixed(1)}x`;
+        wsSummary.getCell(startRowSens + 2, 3 + i).font = fontBold;
+        wsSummary.getCell(startRowSens + 2, 3 + i).alignment = alignCenter;
     });
 
     steps.forEach((gStep, rowIdx) => {
         const gVal = baseGrowth + gStep * 2;
-        const r = 13 + rowIdx;
+        const r = startRowSens + 3 + rowIdx;
         wsSummary.getCell(r, 2).value = `${gVal.toFixed(1)}%`;
         wsSummary.getCell(r, 2).font = fontBold;
 
@@ -142,8 +222,10 @@ export async function generateExcelModel(
 
     wsSummary.getColumn("B").width = 25;
     wsSummary.getColumn("C").width = 15;
-    wsSummary.getColumn("D").width = 15;
-    wsSummary.getColumn("E").width = 15;
+    wsSummary.getColumn("D").width = 5;
+    wsSummary.getColumn("E").width = 5;
+    wsSummary.getColumn("F").width = 25;
+    wsSummary.getColumn("G").width = 15;
 
 
     const wsModel = workbook.addWorksheet("Model", {
@@ -214,8 +296,9 @@ export async function generateExcelModel(
 
     const rSnr = assumptions.seniorInterest / 100;
     const rJnr = assumptions.juniorInterest / 100;
-    setRow(R.IS_INTEREST, "Less: Interest", (i) => ({
-        formula: `(${cellPrev(R.DEBT_SNR_EOP, i)}*${rSnr}) + (${cellPrev(R.DEBT_JNR_EOP, i)}*${rJnr})`,
+    const rRev = (assumptions.seniorInterest + 1.0) / 100;
+    setRow(R.IS_INTEREST, "Less: Interest", (i) => i === 0 ? 0 : ({
+        formula: `(${cellPrev(R.DEBT_SNR_EOP, i)}*${rSnr}) + (${cellPrev(R.DEBT_JNR_EOP, i)}*${rJnr}) + (${cellPrev(R.DEBT_REV_EOP, i)}*${rRev})`,
         result: outputs.projections[i].interestExpense
     }), numFmtCurrency);
 
@@ -231,7 +314,11 @@ export async function generateExcelModel(
 
     setRow(R.CF_NET_INCOME, "Net Income", (i) => ({ formula: cell(R.IS_NET_INCOME, i) }), numFmtCurrency, true);
     setRow(R.CF_PLUS_DEPR, "Plus: D&A", (i) => ({ formula: cell(R.IS_DEPR, i) }), numFmtCurrency);
-    setRow(R.CF_LESS_CAPEX, "Less: Capex", (i) => ({ formula: `-${cell(R.IS_REVENUE, i)}*0.02` }), numFmtCurrency);
+
+
+    const capexRate = assumptions.capexPercent / 100;
+    setRow(R.CF_LESS_CAPEX, "Less: Capex", (i) => ({ formula: `-${cell(R.IS_REVENUE, i)}*${capexRate}` }), numFmtCurrency);
+
     setRow(R.CF_LESS_NWC, "Less: NWC", (i) => ({ formula: `-${cell(R.IS_REVENUE, i)}*0.01` }), numFmtCurrency);
 
     setRow(R.CF_FCF, "Free Cash Flow", (i) => ({ formula: `SUM(${cell(R.CF_NET_INCOME, i)}:${cell(R.CF_LESS_NWC, i)})` }), numFmtCurrency, true);
@@ -239,8 +326,17 @@ export async function generateExcelModel(
     wsModel.getCell(`B${R.DEBT_REV_BOP - 1}`).value = "IV. Debt Schedule";
     wsModel.getCell(`B${R.DEBT_REV_BOP - 1}`).font = { ...fontBold, size: 10 };
 
+    setRow(R.DEBT_REV_BOP, "Revolver BoP", (i) => i === 0 ? "-" : { formula: cellPrev(R.DEBT_REV_EOP, i) }, numFmtCurrency);
+
+    setRow(R.DEBT_REV_DRAW, "Revolver Draw/(Pay)", (i) => ({
+        formula: `IF(${cell(R.CF_FCF, i)}<0, -${cell(R.CF_FCF, i)}, -MIN(${cell(R.CF_FCF, i)}, ${cell(R.DEBT_REV_BOP, i)}))`
+    }), numFmtCurrency);
+
+    setRow(R.DEBT_REV_EOP, "Revolver EoP", (i) => i === 0 ? 0 : { formula: `${cell(R.DEBT_REV_BOP, i)}+${cell(R.DEBT_REV_DRAW, i)}` }, numFmtCurrency, true);
+
+
     setRow(R.DEBT_SNR_BOP, "Senior BoP", (i) => i === 0 ? "-" : { formula: cellPrev(R.DEBT_SNR_EOP, i) }, numFmtCurrency);
-    setRow(R.DEBT_SNR_EOP, "Senior EoP", (i) => i === 0 ? outputs.projections[0].seniorDebt : { formula: `MAX(0, ${cell(R.DEBT_SNR_BOP, i)} - MAX(0, ${cell(R.CF_FCF, i)}))` }, numFmtCurrency, true);
+    setRow(R.DEBT_SNR_EOP, "Senior EoP", (i) => i === 0 ? outputs.projections[0].seniorDebt : { formula: `MAX(0, ${cell(R.DEBT_SNR_BOP, i)} - MAX(0, ${cell(R.CF_FCF, i)} + ${cell(R.DEBT_REV_DRAW, i)}))` }, numFmtCurrency, true);
 
     setRow(R.DEBT_JNR_BOP, "Junior BoP", (i) => i === 0 ? "-" : { formula: cellPrev(R.DEBT_JNR_EOP, i) }, numFmtCurrency);
     setRow(R.DEBT_JNR_EOP, "Junior EoP", (i) => i === 0 ? outputs.projections[0].juniorDebt : { formula: cell(R.DEBT_JNR_BOP, i) }, numFmtCurrency, true);
